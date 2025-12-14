@@ -84,7 +84,7 @@
                         Cancel
                     </a>
                     <button type="submit" class="btn btn-primary px-4">
-                        Create Teacher
+                        Add Student
                     </button>
                 </div>
 

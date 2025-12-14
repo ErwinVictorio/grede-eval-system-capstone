@@ -1,7 +1,9 @@
 <x-layouts.app title="Teacher Dashboard">
 
     {{-- GOOGLE FONTS + GOOGLE ICONS --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
 
     <style>
@@ -94,7 +96,7 @@
         <div class="p-3">
             <div class="col-md-6">
                 <h3 class="fw-bold mb-0">
-                    Good day , {{ Auth::user()->name ?? 'Teacher' }}
+                    Good day , {{ Auth::user()->full_name ?? 'Teacher' }}
                 </h3>
             </div>
 
@@ -201,12 +203,25 @@
                             <span class="material-symbols-rounded">menu_book</span>
                             Record Activity
                         </a>
+
+                        <a href="#">
+                            <span class="material-symbols-rounded">menu_book</span>
+                            Projects
+                        </a>
+
+                        <a href="#">
+                            <span class="material-symbols-rounded">assignment</span>
+                            Recitation
+                        </a>
+
+
+
                     </div>
                 </div>
             </aside>
 
             <!-- MAIN CONTENT -->
-            <section class="col-lg-9">  
+            <section class="col-lg-9">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-semibold">Student List</h5>
@@ -216,12 +231,12 @@
                         </a>
                     </div>
 
-                   {{--  success message --}}
+                    {{-- success message --}}
                     @if (session('success'))
-                        <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
+                    <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                     @endif
 
                     <div class="card-body">
@@ -237,24 +252,26 @@
                                 </thead>
                                 <tbody>
 
-                                    @forelse($students  as $student)
-                                        <tr>
-                                            <td>{{ $student->full_name }}</td>
-                                            <td>{{ $student->section }}</td>
-                                            <td class="text-end">
-                                                <a href="{{ route('student.report', $student->id) }}" class="btn btn-sm btn-info me-2" title="View Report">
-                                                    <span class="material-symbols-rounded" style="font-size: 16px;">assessment</span> Report
-                                                </a>
-                                                <a href="#" class="btn btn-sm btn-warning me-2">Edit</a>
-                                                <a href="#" class="btn btn-sm btn-danger">Delete</a>
-                                            </td>
-                                        </tr>
+                                    @forelse($students as $student)
+                                    <tr>
+                                        <td>{{ $student->full_name }}</td>
+                                        <td>{{ $student->section }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ route('student.report', $student->id) }}"
+                                                class="btn btn-sm btn-info me-2" title="View Report">
+                                                <span class="material-symbols-rounded"
+                                                    style="font-size: 16px;">assessment</span> Report
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-warning me-2">Edit</a>
+                                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                        </td>
+                                    </tr>
                                     @empty
-                                        <tr>
-                                            <td colspan="3" class="text-center text-muted py-5">
-                                                No students found.
-                                            </td>
-                                        </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-5">
+                                            No students found.
+                                        </td>
+                                    </tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -267,7 +284,7 @@
         </div>
     </div>
 
-   
+
 
 
 </x-layouts.app>
