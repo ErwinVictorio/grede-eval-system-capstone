@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\TeacherSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,13 +15,13 @@ class TeacherController extends Controller
     // teacher dashboard
     public function index()
     {
+        $students = Student::where('teacher_id', Auth::id())->get();
 
-        $students = Student::where('teacher_id', Auth::user()->id)->get();
+        $percentage = TeacherSetting::where('user_id', Auth::id())->first();
 
-        return view('Teacher.Dashboard',
-            ['students' => $students]
-        );
+        return view('Teacher.Dashboard', compact('students', 'percentage'));
     }
+
 
     public function addStudentForm()
     {
@@ -50,7 +51,7 @@ class TeacherController extends Controller
             'subject' => $validatedData['subject'],
             'role' => 'teacher',
             'password' => bcrypt($validatedData['password']),
-        ]); 
+        ]);
 
         return redirect()->route('Dashboard.teacher')->with('success', 'Teacher account created successfully.');
     }
@@ -70,11 +71,11 @@ class TeacherController extends Controller
         //  get the id of the currently authenticated teacher
         $teacherId = Auth::user()->id;
         // create new student
-         Student::create([
+        Student::create([
             'full_name' => $validatedData['full_name'],
             'section' => $validatedData['section'],
             'subject' => $validatedData['subject'],
-             'teacher_id' => $teacherId,
+            'teacher_id' => $teacherId,
         ]);
 
         return redirect()->route('Dashboard.teacher')->with('success', 'Student added successfully.');

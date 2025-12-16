@@ -7,6 +7,8 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\RecitationController;
 use App\Http\Controllers\StudentReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,4 +69,24 @@ Route::middleware(['role:teacher'])->prefix('Teacher')->group(function () {
     Route::get('/activity/edit/{id}', [ActivityController::class, 'edit'])->name('activity.edit');
     Route::put('/activity/{id}', [ActivityController::class, 'update'])->name('activity.update');
     Route::delete('/activity/{id}', [ActivityController::class, 'destroy'])->name('activity.destroy');
+
+    // Project routes
+    Route::get('/project', [ProjectController::class, 'show'])->name('project.show');
+    Route::post('/project', [ProjectController::class, 'store'])->name('project.store');
+    Route::get('/project/report/{student}', [ProjectController::class, 'report'])->name('project.report');
+    Route::get('/project/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
+    Route::put('/project/{id}', [ProjectController::class, 'update'])->name('project.update');
+    Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
+
+    // Recitation routes
+    Route::get('/recitation', [RecitationController::class, 'show'])->name('recitation.show');
+    Route::post('/recitation', [RecitationController::class, 'store'])->name('recitation.store');
+    Route::get('/recitation/report/{student}', [RecitationController::class, 'report'])->name('recitation.report');
+    Route::get('/recitation/edit/{id}', [RecitationController::class, 'edit'])->name('recitation.edit');
+    Route::put('/recitation/{id}', [RecitationController::class, 'update'])->name('recitation.update');
+    Route::delete('/recitation/{id}', [RecitationController::class, 'destroy'])->name('recitation.destroy');
+
+    // Teacher settings for weight allocation
+    Route::get('/settings', [App\Http\Controllers\TeacherSettingsController::class, 'edit'])->name('teacher.settings');
+    Route::post('/settings', [App\Http\Controllers\TeacherSettingsController::class, 'update'])->name('teacher.settings.update');
 });

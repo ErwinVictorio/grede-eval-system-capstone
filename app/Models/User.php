@@ -38,6 +38,12 @@ class User extends Authenticatable
         return $this->hasMany(quiz_exam_activity::class);
     }
 
+    // Relationship with teacher settings
+    public function teacherSetting()
+    {
+        return $this->hasOne(\App\Models\TeacherSetting::class);
+    }
+
 
 
     /**

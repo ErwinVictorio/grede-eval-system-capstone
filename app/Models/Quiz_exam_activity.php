@@ -17,6 +17,7 @@ class Quiz_exam_activity extends Model
         'activity_title',
         'date_taken',
         'score',
+        'weighted_score'
     ];
 
     //  create relationshiip wth user abou t quiz_exam_activity

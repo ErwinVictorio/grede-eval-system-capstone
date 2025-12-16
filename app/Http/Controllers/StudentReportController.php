@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\Attendance;
 use App\Models\Quiz_exam_activity;
+use App\Models\TeacherSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -72,6 +73,22 @@ class StudentReportController extends Controller
             ->orderBy('date_taken', 'desc')
             ->get();
 
+        // Get project records within range
+        $projectRecords = Quiz_exam_activity::where('full_name', $student->full_name)
+            ->where('user_id', Auth::id())
+            ->where('activity_type', 'project')
+            ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
+            ->orderBy('date_taken', 'desc')
+            ->get();
+
+        // Get recitation records within range
+        $recitationRecords = Quiz_exam_activity::where('full_name', $student->full_name)
+            ->where('user_id', Auth::id())
+            ->where('activity_type', 'recitation')
+            ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
+            ->orderBy('date_taken', 'desc')
+            ->get();
+
         // Calculate attendance stats
         $totalAttendanceDays = $attendanceRecords->count();
         $presentDays = $attendanceRecords->where('present', true)->count();
@@ -93,6 +110,58 @@ class StudentReportController extends Controller
         $highestActivityScore = $totalActivities > 0 ? $activityRecords->max('score') : 0;
         $lowestActivityScore = $totalActivities > 0 ? $activityRecords->min('score') : 0;
 
+        // Calculate project stats
+        $totalProjects = $projectRecords->count();
+        $averageProjectScore = $totalProjects > 0 ? $projectRecords->avg('score') : 0;
+        $highestProjectScore = $totalProjects > 0 ? $projectRecords->max('score') : 0;
+        $lowestProjectScore = $totalProjects > 0 ? $projectRecords->min('score') : 0;
+
+        // Calculate recitation stats
+        $totalRecitations = $recitationRecords->count();
+        $averageRecitationScore = $totalRecitations > 0 ? $recitationRecords->avg('score') : 0;
+        $highestRecitationScore = $totalRecitations > 0 ? $recitationRecords->max('score') : 0;
+        $lowestRecitationScore = $totalRecitations > 0 ? $recitationRecords->min('score') : 0;
+
+        // Fetch teacher weight settings
+        $settings = TeacherSetting::where('user_id', Auth::id())->first();
+        $defaultWeights = [
+            'quiz_weight' => 25,
+            'exam_weight' => 25,
+            'activity_weight' => 25,
+            'project_weight' => 15,
+            'recitation_weight' => 10,
+        ];
+
+        $weights = $settings ? $settings->only(array_keys($defaultWeights)) : $defaultWeights;
+
+        // Compute weighted overall: use only categories that have records
+        $numerator = 0;
+        $denominator = 0;
+
+        if ($totalQuizzes > 0) {
+            $numerator += ($averageQuizScore * ($weights['quiz_weight'] ?? $defaultWeights['quiz_weight']));
+            $denominator += ($weights['quiz_weight'] ?? $defaultWeights['quiz_weight']);
+        }
+        if ($totalExams > 0) {
+            $numerator += ($averageExamScore * ($weights['exam_weight'] ?? $defaultWeights['exam_weight']));
+            $denominator += ($weights['exam_weight'] ?? $defaultWeights['exam_weight']);
+        }
+        if ($totalActivities > 0) {
+            $numerator += ($averageActivityScore * ($weights['activity_weight'] ?? $defaultWeights['activity_weight']));
+            $denominator += ($weights['activity_weight'] ?? $defaultWeights['activity_weight']);
+        }
+        if ($totalProjects > 0) {
+            $numerator += ($averageProjectScore * ($weights['project_weight'] ?? $defaultWeights['project_weight']));
+            $denominator += ($weights['project_weight'] ?? $defaultWeights['project_weight']);
+        }
+        if ($totalRecitations > 0) {
+            $numerator += ($averageRecitationScore * ($weights['recitation_weight'] ?? $defaultWeights['recitation_weight']));
+            $denominator += ($weights['recitation_weight'] ?? $defaultWeights['recitation_weight']);
+        }
+
+        $overallWeighted = $denominator > 0 ? ($numerator / $denominator) : 0;
+
+        // pass the settings and computed overall
         return view('Report.StudentReport', compact(
             'student',
             'attendanceRecords',
@@ -112,6 +181,18 @@ class StudentReportController extends Controller
             'averageActivityScore',
             'highestActivityScore',
             'lowestActivityScore',
+            'projectRecords',
+            'totalProjects',
+            'averageProjectScore',
+            'highestProjectScore',
+            'lowestProjectScore',
+            'recitationRecords',
+            'totalRecitations',
+            'averageRecitationScore',
+            'highestRecitationScore',
+            'lowestRecitationScore',
+            'settings',
+            'overallWeighted',
             'semester',
             'year',
             'start',

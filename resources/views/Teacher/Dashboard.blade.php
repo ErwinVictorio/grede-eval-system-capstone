@@ -102,8 +102,54 @@
 
         </div>
 
+        @php
+        $cards = [
+        [
+        'label' => 'Attendance',
+        'value' => $percentage->attendance_weight ?? 0,
+        'icon' => 'check_circle',
+        'color' => '#28a745',
+        ],
+        [
+        'label' => 'Quiz',
+        'value' => $percentage->quiz_weight ?? 0,
+        'icon' => 'edit_note',
+        'color' => '#ffc107',
+        ],
+        [
+        'label' => 'Exam',
+        'value' => $percentage->exam_weight ?? 0,
+        'icon' => 'assignment',
+        'color' => '#dc3545',
+        ],
+
+        [
+        'label' => 'Activities',
+        'value' => $percentage->activity_weight ?? 0,
+        'icon' => 'edit_note',
+        'color' => '#dc3545',
+        ],
+        [
+        'label' => 'Recitaion',
+        'value' => $percentage->recitation_weight ?? 0,
+        'icon' => 'check_circle',
+        'color' => '#dc3545',
+        ],
+
+        [
+        'label' => 'Projects',
+        'value' => $percentage->project_weight ?? 0,
+        'icon' => 'assignment',
+        'color' => '#dc3545',
+        ],
+        ];
+        @endphp
+
+
         <!-- Summary Cards -->
         <div class="row mb-4">
+
+            <!-- Total Students -->
             <div class="col-md-3 mb-3">
                 <div class="card">
                     <div class="card-body">
@@ -119,52 +165,27 @@
                     </div>
                 </div>
             </div>
+
+            @foreach ($cards as $card)
             <div class="col-md-3 mb-3">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="text-muted mb-1 small">Attendance</p>
-                                <h4 class="fw-bold mb-0">50%</h4>
+                                <p class="text-muted mb-1 small">{{ $card['label'] }}</p>
+                                <h4 class="fw-bold mb-0">{{ $card['value'] }}%</h4>
                             </div>
-                            <div style="font-size: 32px; color: #28a745;">
-                                <span class="material-symbols-rounded">check_circle</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <p class="text-muted mb-1 small">Quiz</p>
-                                <h4 class="fw-bold mb-0">20%</h4>
-                            </div>
-                            <div style="font-size: 32px; color: #ffc107;">
-                                <span class="material-symbols-rounded">edit_note</span>
+                            <div style="font-size: 32px; color: {{ $card['color'] }};">
+                                <span class="material-symbols-rounded">{{ $card['icon'] }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <p class="text-muted mb-1 small">Exam</p>
-                                <h4 class="fw-bold mb-0">30%</h4>
-                            </div>
-                            <div style="font-size: 32px; color: #dc3545;">
-                                <span class="material-symbols-rounded">assignment</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
+
         </div>
+
 
         <div class="row">
 
@@ -204,16 +225,22 @@
                             Record Activity
                         </a>
 
-                        <a href="#">
-                            <span class="material-symbols-rounded">menu_book</span>
+                        <a href="{{ route('project.show') }}">
+                            <span class="material-symbols-rounded">school</span>
                             Projects
                         </a>
 
-                        <a href="#">
-                            <span class="material-symbols-rounded">assignment</span>
-                            Recitation
+                        <a href="{{ route('recitation.show') }}">
+                            <span class="material-symbols-rounded">record_voice_over</span>
+                            Record Recitation
                         </a>
 
+                        <a href="{{ route('teacher.settings') }}">
+                            <span class="material-symbols-rounded">tune</span>
+                            Grade Allocation
+                        </a>
+
+                        <!-- Removed placeholder link that was using href="#" and caused confusion -->
 
 
                     </div>
@@ -225,7 +252,7 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-semibold">Student List</h5>
-                        <a href={{route('add-student')}} class="btn btn-sm btn-outline-primary">
+                        <a href="{{ route('add-student') }}" class="btn btn-sm btn-outline-primary">
                             <span class="material-symbols-rounded" style="font-size: 18px;">person_add</span>
                             Add Student
                         </a>

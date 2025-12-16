@@ -109,16 +109,20 @@
                             <div>
                                 <p class="text-muted mb-1 small">Overall Score</p>
                                 @php
-                                    $overall = ($averageQuizScore + $averageExamScore) / 2;
+                                    // Use weighted overall computed by controller (overallWeighted)
+                                    $overallScore = isset($overallWeighted) ? $overallWeighted : 0;
                                     $grade = '';
-                                    if ($overall >= 90) $grade = 'A';
-                                    elseif ($overall >= 80) $grade = 'B';
-                                    elseif ($overall >= 70) $grade = 'C';
-                                    elseif ($overall >= 60) $grade = 'D';
+                                    if ($overallScore >= 90) $grade = 'A';
+                                    elseif ($overallScore >= 80) $grade = 'B';
+                                    elseif ($overallScore >= 70) $grade = 'C';
+                                    elseif ($overallScore >= 60) $grade = 'D';
                                     else $grade = 'F';
                                 @endphp
                                 <h4 class="fw-bold mb-0">{{ $grade }}</h4>
-                                <small class="text-muted">{{ number_format($overall, 1) }}/100</small>
+                                <small class="text-muted">{{ number_format($overallScore, 1) }}/100</small>
+                                @if(isset($settings))
+                                    <div class="mt-2 small text-muted">Weights: Q{{ $settings->quiz_weight ?? 25 }}% | Ex{{ $settings->exam_weight ?? 25 }}% | Ac{{ $settings->activity_weight ?? 25 }}% | Pr{{ $settings->project_weight ?? 15 }}% | Re{{ $settings->recitation_weight ?? 10 }}%</div>
+                                @endif
                             </div>
                             <div style="font-size: 32px; color: #0d6efd;">
                                 <span class="material-symbols-rounded">grade</span>
@@ -149,6 +153,43 @@
             </div>
         </div>
 
+        <!-- Project & Recitation Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small">Project Average</p>
+                                <h4 class="fw-bold mb-0">{{ number_format($averageProjectScore ?? 0, 1) }}/100</h4>
+                                <small class="text-muted">{{ $totalProjects ?? 0 }} Projects</small>
+                            </div>
+                            <div style="font-size: 32px; color: #17a2b8;">
+                                <span class="material-symbols-rounded">school</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small">Recitation Average</p>
+                                <h4 class="fw-bold mb-0">{{ number_format($averageRecitationScore ?? 0, 1) }}/100</h4>
+                                <small class="text-muted">{{ $totalRecitations ?? 0 }} Recitations</small>
+                            </div>
+                            <div style="font-size: 32px; color: #0dcaf0;">
+                                <span class="material-symbols-rounded">record_voice_over</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tabs for Details -->
         <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -169,6 +210,16 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
                     <span class="material-symbols-rounded" style="font-size: 20px;">local_activity</span> Activities
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="project-tab" data-bs-toggle="tab" data-bs-target="#project" type="button" role="tab">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">school</span> Projects
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recitation-tab" data-bs-toggle="tab" data-bs-target="#recitation" type="button" role="tab">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">record_voice_over</span> Recitations
                 </button>
             </li>
         </ul>
@@ -352,6 +403,100 @@
                                     <tr>
                                         <td colspan="4" class="text-center text-muted py-4">
                                             No activity records found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Tab -->
+            <div class="tab-pane fade" id="project" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Project Records</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Project Title</th>
+                                    <th>Date Submitted</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($projectRecords as $record)
+                                    <tr>
+                                        <td>{{ $record->activity_title }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($record->date_taken)->format('M d, Y') }}</td>
+                                        <td>{{ $record->score }}/100</td>
+                                        <td>
+                                            @if($record->score >= 80)
+                                                <span class="badge bg-success">Excellent</span>
+                                            @elseif($record->score >= 70)
+                                                <span class="badge bg-info">Good</span>
+                                            @elseif($record->score >= 60)
+                                                <span class="badge bg-warning">Fair</span>
+                                            @else
+                                                <span class="badge bg-danger">Needs Improvement</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            No project records found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recitation Tab -->
+            <div class="tab-pane fade" id="recitation" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Recitation Records</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Topic</th>
+                                    <th>Date Conducted</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($recitationRecords as $record)
+                                    <tr>
+                                        <td>{{ $record->activity_title }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($record->date_taken)->format('M d, Y') }}</td>
+                                        <td>{{ $record->score }}/100</td>
+                                        <td>
+                                            @if($record->score >= 80)
+                                                <span class="badge bg-success">Excellent</span>
+                                            @elseif($record->score >= 70)
+                                                <span class="badge bg-info">Good</span>
+                                            @elseif($record->score >= 60)
+                                                <span class="badge bg-warning">Fair</span>
+                                            @else
+                                                <span class="badge bg-danger">Needs Improvement</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            No recitation records found.
                                         </td>
                                     </tr>
                                 @endforelse
