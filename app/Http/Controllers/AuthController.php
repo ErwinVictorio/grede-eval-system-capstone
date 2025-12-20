@@ -39,6 +39,9 @@ class AuthController extends Controller
                     return redirect()->route('Dashboard.admin');
                 case 'teacher':
                     return redirect()->route('Dashboard.teacher');
+
+                    case 'councilor':
+                          return redirect()->route('councilorDashboard.view');
                 default:
                     Auth::logout();
                     return redirect()->route('login')->with('error', 'Your account role is not recognized.');

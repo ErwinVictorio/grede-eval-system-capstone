@@ -16,19 +16,20 @@ class AuthMiddleware
     public function handle(Request $request, Closure $next, $role): Response
     {
 
-         $user = $request->user(); // or use auth()->user()
+        $user = $request->user(); // or use auth()->user()
         if (!$user) {
             return redirect()->route('login')->with('error', 'Please log in your account.');
         }
 
 
-       //userMapping
+        //userMapping
         $Roles = [
             'admin' => 'admin',
-             'teacher' => 'teacher'
+            'teacher' => 'teacher',
+            'councilor' => 'councilor'
         ];
 
-          $userRoles = $Roles[$user->role];
+        $userRoles = $Roles[$user->role];
 
         if ($userRoles !== $role) {
             return redirect()->route('login')->with('error', 'You do not have permission to access this page.');

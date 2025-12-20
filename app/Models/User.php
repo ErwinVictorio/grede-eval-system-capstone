@@ -44,6 +44,11 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\TeacherSetting::class);
     }
 
+    public function flagCreated(){
+
+        return $this->hasMany(EvalutionComment::class,'teacher_id');
+    }
+
 
 
     /**

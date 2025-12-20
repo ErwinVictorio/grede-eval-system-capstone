@@ -7,9 +7,11 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\EvalutionCommentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RecitationController;
 use App\Http\Controllers\StudentReportController;
+use App\Http\Controllers\TeacherSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,12 +37,16 @@ Route::middleware(['role:admin'])->prefix('Admin')->group(function () {
 Route::middleware(['role:teacher'])->prefix('Teacher')->group(function () {
     Route::get('/Dashboard', [TeacherController::class, 'index'])->name('Dashboard.teacher');
 
-    
+
     // Student Report route
     Route::get('/student/{student}/report', [StudentReportController::class, 'show'])->name('student.report');
+    Route::get('/flag-student/{id}', [StudentReportController::class, 'ShowFlagFormPage'])->name('flag.view');
+    Route::post('/submit-flag',[StudentReportController::class,'storeFlag'])->name('flag.submit');
 
-    Route::get('/add-student',[TeacherController::class, 'addStudentForm'])->name('add-student');
-    Route::post('/add-student',[TeacherController::class, 'storeStudent'])->name('add-student.store');
+
+
+    Route::get('/add-student', [TeacherController::class, 'addStudentForm'])->name('add-student');
+    Route::post('/add-student', [TeacherController::class, 'storeStudent'])->name('add-student.store');
     // Attendance routes
     Route::get('/attendance', [AttendanceController::class, 'show'])->name('attendance.show');
     Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
@@ -53,7 +59,7 @@ Route::middleware(['role:teacher'])->prefix('Teacher')->group(function () {
     Route::get('/quiz/edit/{id}', [QuizController::class, 'edit'])->name('quiz.edit');
     Route::put('/quiz/{id}', [QuizController::class, 'update'])->name('quiz.update');
     Route::delete('/quiz/{id}', [QuizController::class, 'destroy'])->name('quiz.destroy');
-    
+
     // Exam routes
     Route::get('/exam', [ExamController::class, 'show'])->name('exam.show');
     Route::post('/exam', [ExamController::class, 'store'])->name('exam.store');
@@ -87,6 +93,16 @@ Route::middleware(['role:teacher'])->prefix('Teacher')->group(function () {
     Route::delete('/recitation/{id}', [RecitationController::class, 'destroy'])->name('recitation.destroy');
 
     // Teacher settings for weight allocation
-    Route::get('/settings', [App\Http\Controllers\TeacherSettingsController::class, 'edit'])->name('teacher.settings');
-    Route::post('/settings', [App\Http\Controllers\TeacherSettingsController::class, 'update'])->name('teacher.settings.update');
+    Route::get('/settings', [TeacherSettingsController::class, 'edit'])->name('teacher.settings');
+    Route::post('/settings', [TeacherSettingsController::class, 'update'])->name('teacher.settings.update');
+});
+
+
+
+Route::middleware(['role:councilor'])->prefix('councilor')->group(function () {
+
+    Route::get('/Dashboard',[EvalutionCommentController::class,'index'])->name('councilorDashboard.view');
+    Route::patch('/status/{id}', [EvalutionCommentController::class, 'updateStatus'])->name('councilor.updateStatus');
+    Route::post('/schedule/{id}', [EvalutionCommentController::class, 'setSchedule'])->name('councilor.setSchedule');
+Route::patch('/councilor/referral/{id}/status', [EvalutionCommentController::class, 'updateStatus'])->name('councilor.updateStatus');
 });

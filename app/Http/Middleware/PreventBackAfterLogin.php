@@ -22,6 +22,9 @@ class PreventBackAfterLogin
                     return redirect()->route('Dashboard.admin');
                 case 'teacher':
                     return redirect()->route('Dashboard.teacher');
+
+                    case 'councilor':
+                        return redirect()->route('councilorDashboard.view');
             }
         }
 

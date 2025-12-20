@@ -274,30 +274,50 @@
                                     <tr>
                                         <th>Student Name</th>
                                         <th>Section</th>
+                                        <th>Counseling Schedule</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-
                                     @forelse($students as $student)
                                     <tr>
-                                        <td>{{ $student->full_name }}</td>
-                                        <td>{{ $student->section }}</td>
+                                        <td class="fw-bold">{{ $student->full_name }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ $student->section }}</span>
+                                        </td>
+                                        <td>
+                                            {{-- I-check kung may schedule ang student --}}
+                                            @php $activeSched = $student->evaluations->first(); @endphp
+
+                                            @if($activeSched)
+                                            <div class="text-primary fw-medium small d-flex align-items-center">
+                                                <span class="material-symbols-rounded"
+                                                    style="font-size: 18px;">calendar_month</span>
+                                                {{-- Format: Dec 09, 2025 06:46 AM --}}
+                                                {{ \Carbon\Carbon::parse($activeSched->scheduled_at)->format('M d, Y h:i
+                                                A') }}
+                                            </div>
+                                            @else
+                                            <span class="text-muted small">No schedule set</span>
+                                            @endif
+                                        </td>
                                         <td class="text-end">
                                             <a href="{{ route('student.report', $student->id) }}"
-                                                class="btn btn-sm btn-info me-2" title="View Report">
+                                                class="btn btn-sm btn-info text-white me-1">
                                                 <span class="material-symbols-rounded"
                                                     style="font-size: 16px;">assessment</span> Report
                                             </a>
-                                            <a href="#" class="btn btn-sm btn-warning me-2">Edit</a>
-                                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                            <a href="{{ route('flag.view', $student->id) }}"
+                                                class="btn btn-sm btn-warning me-1">
+                                                <span class="material-symbols-rounded"
+                                                    style="font-size: 16px;">person_alert</span> Flag
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-light border me-1">Edit</a>
+                                            <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-5">
-                                            No students found.
-                                        </td>
+                                        <td colspan="4" class="text-center text-muted py-5">No students found.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>

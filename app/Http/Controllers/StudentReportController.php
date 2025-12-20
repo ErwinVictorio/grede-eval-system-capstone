@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\Attendance;
+use App\Models\EvalutionComment;
 use App\Models\Quiz_exam_activity;
 use App\Models\TeacherSetting;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,7 @@ class StudentReportController extends Controller
     public function show(Request $request, $studentId)
     {
         $student = Student::findOrFail($studentId);
-        
+
         // Check authorization - student must belong to logged-in teacher
         if ($student->teacher_id !== Auth::id()) {
             abort(403);
@@ -198,5 +199,43 @@ class StudentReportController extends Controller
             'start',
             'end'
         ));
+    }
+
+
+    public function ShowFlagFormPage($id)
+    {
+        // Hanapin ang student o mag-error kung wala (404)
+        $student = \App\Models\Student::findOrFail($id);
+
+        // Security check: Siguraduhin na ang teacher ay may karapatan sa student na ito
+        if ($student->teacher_id !== Auth::id()) {
+            return \redirect()->route('login');
+        }
+
+        // Ipasa ang $student variable sa view
+        return view('Report.FlagStudent', compact('student'));
+    }
+
+    /**
+     * Logic para i-save ang referral sa database
+     */
+    public function storeFlag(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required',
+            'category' => 'required',
+            'status' => 'required',
+            'comments' => 'required|min:5',
+        ]);
+
+        EvalutionComment::create([
+            'student_id' => $request->student_id,
+            'teacher_id' => Auth::id(),
+            'status' => $request->status,
+            'comments' => $request->comments,
+            'category' => $request->category,
+        ]);
+
+        return redirect()->route('Dashboard.teacher')->with('success', 'Student has been flagged for counseling.');
     }
 }
