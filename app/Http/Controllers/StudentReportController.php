@@ -29,8 +29,7 @@ class StudentReportController extends Controller
         $semester = (int) $request->query('semester', 0); // 0 = all
         $year = (int) $request->query('year', Carbon::now()->year);
 
-        // compute date range for semester if selected (two semesters per year)
-        // semesters: 1 => Jan-Jun, 2 => Jul-Dec
+        // Compute date range
         if ($semester === 1) {
             $start = Carbon::create($year, 1, 1)->startOfDay();
             $end = Carbon::create($year, 6, 30)->endOfDay();
@@ -38,187 +37,124 @@ class StudentReportController extends Controller
             $start = Carbon::create($year, 7, 1)->startOfDay();
             $end = Carbon::create($year, 12, 31)->endOfDay();
         } else {
-            // full year
             $start = Carbon::create($year, 1, 1)->startOfDay();
             $end = Carbon::create($year, 12, 31)->endOfDay();
         }
 
-        // Get attendance records within range
-        $attendanceRecords = Attendance::where('full_name', $student->full_name)
-            ->where('user_id', Auth::id())
+        // Get records within range
+        $commonQuery = [
+            ['full_name', '=', $student->full_name],
+            ['user_id', '=', Auth::id()]
+        ];
+
+        $attendanceRecords = Attendance::where($commonQuery)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date', 'desc')
-            ->get();
+            ->orderBy('date', 'desc')->get();
 
-        // Get quiz records within range
-        $quizRecords = Quiz_exam_activity::where('full_name', $student->full_name)
-            ->where('user_id', Auth::id())
-            ->where('activity_type', 'quiz')
+        $allActivities = Quiz_exam_activity::where($commonQuery)
             ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date_taken', 'desc')
             ->get();
 
-        // Get exam records within range
-        $examRecords = Quiz_exam_activity::where('full_name', $student->full_name)
-            ->where('user_id', Auth::id())
-            ->where('activity_type', 'exam')
-            ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date_taken', 'desc')
-            ->get();
+        // Grouping records by activity_type
+        $quizRecords = $allActivities->where('activity_type', 'quiz')->sortByDesc('date_taken');
+        $examRecords = $allActivities->where('activity_type', 'exam')->sortByDesc('date_taken');
+        $activityRecords = $allActivities->where('activity_type', 'activity')->sortByDesc('date_taken');
+        $projectRecords = $allActivities->where('activity_type', 'project')->sortByDesc('date_taken');
+        $recitationRecords = $allActivities->where('activity_type', 'recitation')->sortByDesc('date_taken');
 
-        // Get activity records within range
-        $activityRecords = Quiz_exam_activity::where('full_name', $student->full_name)
-            ->where('user_id', Auth::id())
-            ->where('activity_type', 'activity')
-            ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date_taken', 'desc')
-            ->get();
-
-        // Get project records within range
-        $projectRecords = Quiz_exam_activity::where('full_name', $student->full_name)
-            ->where('user_id', Auth::id())
-            ->where('activity_type', 'project')
-            ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date_taken', 'desc')
-            ->get();
-
-        // Get recitation records within range
-        $recitationRecords = Quiz_exam_activity::where('full_name', $student->full_name)
-            ->where('user_id', Auth::id())
-            ->where('activity_type', 'recitation')
-            ->whereBetween('date_taken', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date_taken', 'desc')
-            ->get();
-
-        // Calculate attendance stats
+        // Calculate Stats
         $totalAttendanceDays = $attendanceRecords->count();
         $presentDays = $attendanceRecords->where('present', true)->count();
         $attendancePercentage = $totalAttendanceDays > 0 ? ($presentDays / $totalAttendanceDays) * 100 : 0;
 
-        // Calculate quiz stats
         $totalQuizzes = $quizRecords->count();
         $averageQuizScore = $totalQuizzes > 0 ? $quizRecords->avg('score') : 0;
         $highestQuizScore = $totalQuizzes > 0 ? $quizRecords->max('score') : 0;
 
-        // Calculate exam stats
         $totalExams = $examRecords->count();
         $averageExamScore = $totalExams > 0 ? $examRecords->avg('score') : 0;
         $highestExamScore = $totalExams > 0 ? $examRecords->max('score') : 0;
 
-        // Calculate activity stats
         $totalActivities = $activityRecords->count();
         $averageActivityScore = $totalActivities > 0 ? $activityRecords->avg('score') : 0;
         $highestActivityScore = $totalActivities > 0 ? $activityRecords->max('score') : 0;
         $lowestActivityScore = $totalActivities > 0 ? $activityRecords->min('score') : 0;
 
-        // Calculate project stats
         $totalProjects = $projectRecords->count();
         $averageProjectScore = $totalProjects > 0 ? $projectRecords->avg('score') : 0;
         $highestProjectScore = $totalProjects > 0 ? $projectRecords->max('score') : 0;
         $lowestProjectScore = $totalProjects > 0 ? $projectRecords->min('score') : 0;
 
-        // Calculate recitation stats
         $totalRecitations = $recitationRecords->count();
         $averageRecitationScore = $totalRecitations > 0 ? $recitationRecords->avg('score') : 0;
         $highestRecitationScore = $totalRecitations > 0 ? $recitationRecords->max('score') : 0;
         $lowestRecitationScore = $totalRecitations > 0 ? $recitationRecords->min('score') : 0;
 
-        // Fetch teacher weight settings
+        // Weighting Logic
         $settings = TeacherSetting::where('user_id', Auth::id())->first();
-        $defaultWeights = [
-            'quiz_weight' => 25,
-            'exam_weight' => 25,
-            'activity_weight' => 25,
-            'project_weight' => 15,
-            'recitation_weight' => 10,
+        
+        // FIX: Inayos ang syntax mula sa screenshot mo ($settings-attendance_weight naging $settings->attendance_weight)
+        $weights = [
+            'attendance' => $settings->attendance_weight ?? 10, 
+            'quiz'       => $settings->quiz_weight ?? 15,
+            'exam'       => $settings->exam_weight ?? 25,
+            'activity'   => $settings->activity_weight ?? 25,
+            'project'    => $settings->project_weight ?? 15,
+            'recitation' => $settings->recitation_weight ?? 10
         ];
 
-        $weights = $settings ? $settings->only(array_keys($defaultWeights)) : $defaultWeights;
-
-        // Compute weighted overall: use only categories that have records
         $numerator = 0;
         $denominator = 0;
 
+        // Computation Logic (Isama ang Attendance)
+        if ($totalAttendanceDays > 0) {
+            $numerator += ($attendancePercentage * $weights['attendance']);
+            $denominator += $weights['attendance'];
+        }
         if ($totalQuizzes > 0) {
-            $numerator += ($averageQuizScore * ($weights['quiz_weight'] ?? $defaultWeights['quiz_weight']));
-            $denominator += ($weights['quiz_weight'] ?? $defaultWeights['quiz_weight']);
+            $numerator += ($averageQuizScore * $weights['quiz']);
+            $denominator += $weights['quiz'];
         }
         if ($totalExams > 0) {
-            $numerator += ($averageExamScore * ($weights['exam_weight'] ?? $defaultWeights['exam_weight']));
-            $denominator += ($weights['exam_weight'] ?? $defaultWeights['exam_weight']);
+            $numerator += ($averageExamScore * $weights['exam']);
+            $denominator += $weights['exam'];
         }
         if ($totalActivities > 0) {
-            $numerator += ($averageActivityScore * ($weights['activity_weight'] ?? $defaultWeights['activity_weight']));
-            $denominator += ($weights['activity_weight'] ?? $defaultWeights['activity_weight']);
+            $numerator += ($averageActivityScore * $weights['activity']);
+            $denominator += $weights['activity'];
         }
         if ($totalProjects > 0) {
-            $numerator += ($averageProjectScore * ($weights['project_weight'] ?? $defaultWeights['project_weight']));
-            $denominator += ($weights['project_weight'] ?? $defaultWeights['project_weight']);
+            $numerator += ($averageProjectScore * $weights['project']);
+            $denominator += $weights['project'];
         }
         if ($totalRecitations > 0) {
-            $numerator += ($averageRecitationScore * ($weights['recitation_weight'] ?? $defaultWeights['recitation_weight']));
-            $denominator += ($weights['recitation_weight'] ?? $defaultWeights['recitation_weight']);
+            $numerator += ($averageRecitationScore * $weights['recitation']);
+            $denominator += $weights['recitation'];
         }
 
         $overallWeighted = $denominator > 0 ? ($numerator / $denominator) : 0;
 
-        // pass the settings and computed overall
         return view('Report.StudentReport', compact(
-            'student',
-            'attendanceRecords',
-            'quizRecords',
-            'examRecords',
-            'totalAttendanceDays',
-            'presentDays',
-            'attendancePercentage',
-            'totalQuizzes',
-            'averageQuizScore',
-            'highestQuizScore',
-            'totalExams',
-            'averageExamScore',
-            'highestExamScore',
-            'activityRecords',
-            'totalActivities',
-            'averageActivityScore',
-            'highestActivityScore',
-            'lowestActivityScore',
-            'projectRecords',
-            'totalProjects',
-            'averageProjectScore',
-            'highestProjectScore',
-            'lowestProjectScore',
-            'recitationRecords',
-            'totalRecitations',
-            'averageRecitationScore',
-            'highestRecitationScore',
-            'lowestRecitationScore',
-            'settings',
-            'overallWeighted',
-            'semester',
-            'year',
-            'start',
-            'end'
+            'student', 'attendanceRecords', 'quizRecords', 'examRecords', 'activityRecords', 'projectRecords', 'recitationRecords',
+            'totalAttendanceDays', 'presentDays', 'attendancePercentage',
+            'totalQuizzes', 'averageQuizScore', 'highestQuizScore',
+            'totalExams', 'averageExamScore', 'highestExamScore',
+            'totalActivities', 'averageActivityScore', 'highestActivityScore', 'lowestActivityScore',
+            'totalProjects', 'averageProjectScore', 'highestProjectScore', 'lowestProjectScore',
+            'totalRecitations', 'averageRecitationScore', 'highestRecitationScore', 'lowestRecitationScore',
+            'settings', 'overallWeighted', 'semester', 'year', 'start', 'end'
         ));
     }
 
-
     public function ShowFlagFormPage($id)
     {
-        // Hanapin ang student o mag-error kung wala (404)
-        $student = \App\Models\Student::findOrFail($id);
-
-        // Security check: Siguraduhin na ang teacher ay may karapatan sa student na ito
+        $student = Student::findOrFail($id);
         if ($student->teacher_id !== Auth::id()) {
-            return \redirect()->route('login');
+            return redirect()->route('login');
         }
-
-        // Ipasa ang $student variable sa view
         return view('Report.FlagStudent', compact('student'));
     }
 
-    /**
-     * Logic para i-save ang referral sa database
-     */
     public function storeFlag(Request $request)
     {
         $request->validate([

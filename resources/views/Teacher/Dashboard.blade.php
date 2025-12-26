@@ -311,8 +311,15 @@
                                                 <span class="material-symbols-rounded"
                                                     style="font-size: 16px;">person_alert</span> Flag
                                             </a>
-                                            <a href="#" class="btn btn-sm btn-light border me-1">Edit</a>
-                                            <a href="#" class="btn btn-sm btn-outline-danger">Delete</a>
+                                            <form action="{{ route('student.destroy', $student->id) }}" method="POST"
+                                                class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this student?');">
+                                                    Delete
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                     @empty

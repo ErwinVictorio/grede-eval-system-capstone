@@ -13,22 +13,26 @@ class TeacherController extends Controller
     //
 
     // teacher dashboard
-public function index()
-{
-    // Kukunin natin ang mga estudyante kasama ang kanilang pinakabagong counseling referral
-    $students = Student::where('teacher_id', Auth::id())
-        ->with(['evaluations' => function($query) {
-            // Kunin lang ang mga pending o ongoing at may schedule na
-            $query->whereNotNull('scheduled_at')
-                  ->where('status', '!=', 'resolved')
-                  ->orderBy('scheduled_at', 'asc');
-        }])
-        ->get();
+    public function index()
+    {
+        // Kukunin natin ang mga estudyante kasama ang kanilang pinakabagong counseling referral
+        $students = Student::where('teacher_id', Auth::id())
+            ->with(['evaluations' => function ($query) {
+                // Kunin lang ang mga pending o ongoing at may schedule na
+                $query->whereNotNull('scheduled_at')
+                    ->where('status', '!=', 'resolved')
+                    ->orderBy('scheduled_at', 'asc');
+            }])
+            ->get();
 
-    $percentage = TeacherSetting::where('user_id', Auth::id())->first();
+        $percentage = TeacherSetting::where('user_id', Auth::id())->first();
 
-    return view('Teacher.Dashboard', compact('students', 'percentage'));
-}
+        return view('Teacher.Dashboard', compact('students', 'percentage'));
+    }
+
+
+
+
 
 
     public function addStudentForm()
@@ -87,5 +91,15 @@ public function index()
         ]);
 
         return redirect()->route('Dashboard.teacher')->with('success', 'Student added successfully.');
+    }
+
+
+
+    //  Delete Student Function
+    public function destroy($id)
+    {
+        $student = Student::findOrFail($id);
+        $student->delete();
+        return redirect()->route('Dashboard.teacher')->with('success', 'Student deleted successfully.');
     }
 }

@@ -15,34 +15,49 @@
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
-            padding: 40px;
-            transition: transform 0.3s ease;
+            max-width: 420px;
+            padding: 50px 40px;
+            transition: all 0.3s ease;
+        }
+
+        /* LOGO STYLING */
+        .brand-wrapper {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            height: 85px; /* Adjust based on your logo shape */
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));
         }
 
         .login-header h3 {
-            font-weight: 700;
+            font-weight: 800;
             color: #1a202c;
             margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
 
         .login-header p {
             color: #718096;
-            font-size: 0.9rem;
-            margin-bottom: 32px;
+            font-size: 0.95rem;
+            margin-bottom: 35px;
         }
 
         .form-label {
             font-weight: 600;
             font-size: 0.85rem;
             color: #4a5568;
-            margin-left: 4px;
+            margin-bottom: 8px;
+            display: block;
         }
 
         .input-group-custom {
@@ -52,57 +67,90 @@
 
         .input-group-custom .material-symbols-rounded {
             position: absolute;
-            left: 16px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             color: #a0aec0;
-            font-size: 20px;
+            font-size: 22px;
             z-index: 10;
         }
 
         .form-control {
-            height: 54px;
-            border-radius: 14px;
-            padding-left: 48px;
-            border: 2px solid #edf2f7;
+            height: 56px;
+            border-radius: 16px;
+            padding-left: 52px;
+            border: 2px solid #f1f5f9;
             background: #f8fafc;
             font-size: 0.95rem;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease-in-out;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .form-control:focus {
+            outline: none;
             background: #fff;
             border-color: #0d6efd;
             box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
-            color: #2d3748;
+            color: #1e293b;
         }
 
         .btn-login {
-            height: 54px;
-            border-radius: 14px;
-            font-weight: 600;
+            height: 56px;
+            border-radius: 16px;
+            font-weight: 700;
             font-size: 1rem;
             background: #0d6efd;
+            color: white;
             border: none;
-            box-shadow: 0 10px 15px -3px rgba(13, 110, 253, 0.3);
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -5px rgba(13, 110, 253, 0.4);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-login:hover {
             background: #0b5ed7;
             transform: translateY(-2px);
-            box-shadow: 0 12px 20px -3px rgba(13, 110, 253, 0.4);
+            box-shadow: 0 15px 25px -5px rgba(13, 110, 253, 0.5);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
         }
 
         .alert-custom {
-            border-radius: 12px;
+            border-radius: 16px;
             border: none;
+            background-color: #fff5f5;
+            color: #c53030;
             font-size: 0.85rem;
-            padding: 12px 16px;
+            padding: 14px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .system-footer {
+            margin-top: 30px;
+            color: #a0aec0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 
     <div class="login-card">
+        {{-- LOGO SECTION --}}
+        <div class="brand-wrapper">
+            <img src="{{ asset('img/final2.png') }}" alt="System Logo" class="login-logo">
+        </div>
+
         <div class="login-header text-center">
             <h3>Welcome Back</h3>
             <p>Please enter your details to sign in</p>
@@ -110,13 +158,11 @@
 
         {{-- Error Alerts --}}
         @if(session('error') || $errors->any())
-            <div class="alert alert-danger alert-custom mb-4">
-                <div class="d-flex align-items-center">
-                    <span class="material-symbols-rounded me-2" style="font-size: 18px;">error</span>
-                    <div>
-                        @if(session('error')) {{ session('error') }} @endif
-                        @if($errors->any()) Invalid credentials provided. @endif
-                    </div>
+            <div class="alert-custom">
+                <span class="material-symbols-rounded" style="font-size: 20px;">error</span>
+                <div>
+                    @if(session('error')) {{ session('error') }} 
+                    @else Invalid credentials provided. @endif
                 </div>
             </div>
         @endif
@@ -153,14 +199,14 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 btn-login d-flex align-items-center justify-content-center">
+            <button type="submit" class="btn-login">
                 Sign In
-                <span class="material-symbols-rounded ms-2" style="font-size: 20px;">login</span>
+                <span class="material-symbols-rounded">login</span>
             </button>
         </form>
 
-        <div class="mt-4 text-center">
-            <p class="text-muted small mb-0">Counseling Management System v1.0</p>
+        <div class="system-footer text-center">
+            Counseling Management System v1.0
         </div>
     </div>
 </x-layouts.app>

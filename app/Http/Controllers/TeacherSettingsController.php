@@ -17,8 +17,9 @@ class TeacherSettingsController extends Controller
                 'quiz_weight' => 25,
                 'exam_weight' => 25,
                 'activity_weight' => 25,
+                 'attendance_weight' => 10,
                 'project_weight' => 15,
-                'recitation_weight' => 10
+                'recitation_weight' => 5     
             ]
         );
 
@@ -35,6 +36,7 @@ class TeacherSettingsController extends Controller
             'activity_weight' => 'required|integer|min:0|max:100',
             'project_weight' => 'required|integer|min:0|max:100',
             'recitation_weight' => 'required|integer|min:0|max:100',
+            'attendance_weight' => 'required|integer|min:0|max:100',
         ]);
 
         $sum = array_sum(array_values($data));

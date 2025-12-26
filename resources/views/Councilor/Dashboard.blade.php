@@ -31,6 +31,12 @@
                             </div>
                             <span class="material-symbols-rounded" style="font-size: 48px;">priority_high</span>
                         </div>
+                        <div class="px-4 mt-3 d-flex justify-content-between align-items-center">
+                            <div class="small text-muted">Showing {{ $evaluations->total() }} referral(s)</div>
+                            <div>
+                                {{ $evaluations->links() }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -111,13 +117,26 @@
                     <div class="card-header bg-white border-0 py-3">
                         <div class="d-flex justify-content-between align-items-center mb-0">
                             <h5 class="fw-bold mb-0">Student Counseling Referrals</h5>
-                            <div class="d-flex gap-2">
-                                <input type="text" class="form-control form-control-sm rounded-pill px-3"
-                                    placeholder="Search student..." style="width: 200px;">
-                                <select class="form-select form-select-sm rounded-pill" style="width: 150px;">
-                                    <option>All Teachers</option>
+                            <form method="GET" action="{{ route('councilorDashboard.view') }}" class="d-flex gap-2">
+                                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-sm rounded-pill px-3"
+                                    placeholder="Search student or reason..." style="width: 220px;">
+
+                                <select name="teacher_id" class="form-select form-select-sm rounded-pill" style="width: 180px;">
+                                    <option value="">All Teachers</option>
+                                    @foreach($instructors as $ins)
+                                        <option value="{{ $ins->id }}" {{ request('teacher_id') == $ins->id ? 'selected' : '' }}>{{ $ins->full_name }} ({{ $ins->flag_created_count }})</option>
+                                    @endforeach
                                 </select>
-                            </div>
+
+                                <select name="status" class="form-select form-select-sm rounded-pill" style="width: 150px;">
+                                    <option value="">Any Status</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+                                    <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                                </select>
+
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3">Apply</button>
+                            </form>
                         </div>
                     </div>
                     <div class="card-body px-0">

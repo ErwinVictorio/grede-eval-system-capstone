@@ -121,7 +121,7 @@
                                 <h4 class="fw-bold mb-0">{{ $grade }}</h4>
                                 <small class="text-muted">{{ number_format($overallScore, 1) }}/100</small>
                                 @if(isset($settings))
-                                    <div class="mt-2 small text-muted">Weights: Q{{ $settings->quiz_weight ?? 25 }}% | Ex{{ $settings->exam_weight ?? 25 }}% | Ac{{ $settings->activity_weight ?? 25 }}% | Pr{{ $settings->project_weight ?? 15 }}% | Re{{ $settings->recitation_weight ?? 10 }}%</div>
+                                    <div class="mt-2 small text-muted">Weights: Q{{ $settings->quiz_weight ?? 25 }}% | Ex{{ $settings->exam_weight ?? 25 }}% | Ac{{ $settings->activity_weight ?? 25 }}% | Pr{{ $settings->project_weight ?? 15 }}% | Re{{ $settings->recitation_weight ?? 10 }}% | Re{{ $settings->attendance_weight ?? 10 }}%</div>
                                 @endif
                             </div>
                             <div style="font-size: 32px; color: #0d6efd;">

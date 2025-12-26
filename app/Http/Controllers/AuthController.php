@@ -31,6 +31,11 @@ class AuthController extends Controller
         ]);
 
 
+        // $userIp = $request->ip(); // Kinukuha ang IP ng user
+
+        // dd($userIp);
+
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
