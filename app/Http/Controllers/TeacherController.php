@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class TeacherController extends Controller
 {
     //
@@ -26,6 +27,8 @@ class TeacherController extends Controller
             ->get();
 
         $percentage = TeacherSetting::where('user_id', Auth::id())->first();
+
+
 
         return view('Teacher.Dashboard', compact('students', 'percentage'));
     }

@@ -30,6 +30,10 @@ Route::middleware(['role:admin'])->prefix('Admin')->group(function () {
     Route::get('/Dashboard', [AdminController::class, 'index'])->name('Dashboard.admin');
     Route::get('/create-teacher', [AuthController::class, 'createTeacherForm'])->name('create-teacher');
     Route::post('/create-teacher', [TeacherController::class, 'store'])->name('create-teacher.store');
+    // Edit/update/delete teacher
+    Route::get('/teacher/{id}/edit', [AdminController::class, 'edit'])->name('admin.teacher.edit');
+    Route::put('/teacher/{id}', [AdminController::class, 'update'])->name('admin.teacher.update');
+    Route::delete('/teacher/{id}', [AdminController::class, 'destroy'])->name('admin.teacher.destroy');
 });
 
 

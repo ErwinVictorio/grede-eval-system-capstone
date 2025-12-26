@@ -239,23 +239,27 @@
                             <span class="material-symbols-rounded">tune</span>
                             Grade Allocation
                         </a>
-
-                        <!-- Removed placeholder link that was using href="#" and caused confusion -->
-
-
                     </div>
                 </div>
             </aside>
+
 
             <!-- MAIN CONTENT -->
             <section class="col-lg-9">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-semibold">Student List</h5>
+                        @if ($percentage === null)
+                        <span class="text-danger small">Please set grade allocation in settings.</span>
+
+                        @else
                         <a href="{{ route('add-student') }}" class="btn btn-sm btn-outline-primary">
                             <span class="material-symbols-rounded" style="font-size: 18px;">person_add</span>
                             Add Student
                         </a>
+                        @endif
+
+
                     </div>
 
                     {{-- success message --}}

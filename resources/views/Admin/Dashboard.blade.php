@@ -37,9 +37,9 @@
             <small class="text-muted">Welcome to the Grade Evaluation System</small>
         </div>
 
-        <form method="POST" action={{route('logout')}}>
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button
+            <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
         </form>
     </div>
 
@@ -99,8 +99,12 @@
                                         <td>{{ $teacher->section }}</td>
                                         <td>{{ $teacher->subject }}</td>
                                         <td>
-                                            <a href="#" class="btn btn-warning btn-sm me-1">Edit</a>
-                                            <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                                            <a href="{{ route('admin.teacher.edit', $teacher->id) }}" class="btn btn-warning btn-sm me-1">Edit</a>
+                                            <form action="{{ route('admin.teacher.destroy', $teacher->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this teacher?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-danger btn-sm">Delete</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach
