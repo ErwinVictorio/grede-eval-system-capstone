@@ -15,6 +15,7 @@ class EvalutionComment extends Model
         'student_id',
         'teacher_id',
         'status',
+        'urgency',
         'comments',
         'category',
         'scheduled_at', // Siguraduhing nandito ito

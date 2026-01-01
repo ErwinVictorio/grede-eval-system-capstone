@@ -40,6 +40,11 @@ class EvalutionCommentController extends Controller
             $query->where('status', $request->query('status'));
         }
 
+        // Filter by urgency (low|mid|high)
+        if ($request->filled('urgency')) {
+            $query->where('urgency', $request->query('urgency'));
+        }
+
         // Filter by category (if applicable)
         if ($request->filled('category')) {
             $query->where('category', $request->query('category'));
@@ -63,7 +68,8 @@ class EvalutionCommentController extends Controller
             ->get();
 
         $stats = [
-            'high_priority' => EvalutionComment::where('status', 'High')->count(),
+            // high_priority should use urgency, not workflow status
+            'high_priority' => EvalutionComment::where('urgency', 'high')->count(),
             'ongoing' => EvalutionComment::where('status', 'ongoing')->count(),
             'resolved' => EvalutionComment::where('status', 'resolved')
                 ->whereMonth('updated_at', now()->month)->count(),
@@ -98,6 +104,7 @@ class EvalutionCommentController extends Controller
                 'student' => $item->student?->full_name,
                 'teacher' => $item->teacher?->full_name,
                 'status' => $item->status,
+                'urgency' => $item->urgency,
                 'category' => $item->category,
                 'comments' => $item->comments,
                 'scheduled_at' => optional($item->scheduled_at)->toDateTimeString(),
@@ -110,16 +117,41 @@ class EvalutionCommentController extends Controller
 
     public function setSchedule(Request $request, $id)
     {
+        // Accept broad date input, parse it and validate afterward to avoid client timezone issues
         $request->validate([
-            // Pansamantalang alisin ang 'after:now' para ma-test kung gagana
             'scheduled_at' => 'required|date',
         ]);
 
         $evaluation = EvalutionComment::findOrFail($id);
 
+        // Parse scheduled date/time to a consistent Carbon instance
+        try {
+            $scheduledAt = Carbon::parse($request->scheduled_at);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['scheduled_at' => 'Invalid date/time format.'])->withInput();
+        }
+
+        // Ensure scheduled time is in the future (allow small leeway, must be > now)
+        if (! $scheduledAt->isFuture()) {
+            return redirect()->back()->withErrors(['scheduled_at' => 'Please choose a future date and time.'])->withInput();
+        }
+
+        // Check for conflicts within the same minute (minute-resolution matching avoids seconds mismatches)
+        $start = $scheduledAt->copy()->startOfMinute();
+        $end = $scheduledAt->copy()->endOfMinute();
+
+        $conflict = EvalutionComment::whereBetween('scheduled_at', [$start->toDateTimeString(), $end->toDateTimeString()])
+            ->where('status', '!=', 'resolved')
+            ->where('id', '!=', $evaluation->id)
+            ->exists();
+
+        if ($conflict) {
+            return redirect()->back()->withErrors(['scheduled_at' => 'This schedule cannot be booked because the selected date and time are already taken. Please choose a different date or time.'])->withInput();
+        }
+
         // Siguraduhin na ang 'scheduled_at' ay nasa $fillable ng EvalutionComment Model
         $evaluation->update([
-            'scheduled_at' => Carbon::parse($request->scheduled_at),
+            'scheduled_at' => $scheduledAt,
             'status' => 'ongoing'
         ]);
 
