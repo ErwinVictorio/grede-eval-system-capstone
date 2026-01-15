@@ -69,7 +69,7 @@
                         <input type="text" class="form-control" name="fullname" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Section</label>
+                        <label class="form-label">Course/Section</label>
                         <input type="text" class="form-control" name="section" required>
                     </div>
 
